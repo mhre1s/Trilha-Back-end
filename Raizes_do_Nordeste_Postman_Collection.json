@@ -1,0 +1,211 @@
+{
+	"info": {
+		"_postman_id": "raizes-nordeste-api-collection-2026",
+		"name": "Rede Raízes do Nordeste — API REST (Projeto Multidisciplinar)",
+		"description": "Coleção completa de requisições HTTP para a API REST da Rede Raízes do Nordeste, incluindo Autenticação JWT, Cardápios Regionais/Sazonais, Pedidos Omnicanal, Pagamentos Desacoplados, Estoque Local, Relatórios da Matriz e Conformidade LGPD.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "01. Autenticação",
+			"item": [
+				{
+					"name": "Login - Diretoria Matriz",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"diretoria@raizesdonordeste.com.br\",\n  \"senha\": \"Senha@123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Cadastro de Novo Cliente (com LGPD)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Lampião da Silva\",\n  \"email\": \"lampiao.silva@gmail.com\",\n  \"senha\": \"Senha@123\",\n  \"cpf\": \"12345678900\",\n  \"telefone\": \"81988889999\",\n  \"consentimentoTermos\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "register"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "02. Cardápio e Unidades",
+			"item": [
+				{
+					"name": "Listar Unidades da Franquia",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/unidades",
+							"host": ["{{baseUrl}}"],
+							"path": ["unidades"]
+						}
+					}
+				},
+				{
+					"name": "Consultar Cardápio de Recife (com itens juninos)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/unidades/und-recife-01/cardapio",
+							"host": ["{{baseUrl}}"],
+							"path": ["unidades", "und-recife-01", "cardapio"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "03. Gestão de Pedidos (Omnicanal)",
+			"item": [
+				{
+					"name": "Criar Pedido via Totem",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"unidadeId\": \"und-recife-01\",\n  \"canal\": \"TOTEM_AUTOATENDIMENTO\",\n  \"itens\": [\n    {\n      \"produtoId\": \"prod-cuscuz-01\",\n      \"quantidade\": 2,\n      \"observacoes\": \"Sem coentro\"\n    },\n    {\n      \"produtoId\": \"prod-junino-pamonha\",\n      \"quantidade\": 1\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/pedidos",
+							"host": ["{{baseUrl}}"],
+							"path": ["pedidos"]
+						}
+					}
+				},
+				{
+					"name": "Cancelar Pedido com Auditoria",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"motivo\": \"Cliente solicitou alteração do pedido no balcão.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/pedidos/{{pedidoId}}/cancelar",
+							"host": ["{{baseUrl}}"],
+							"path": ["pedidos", "{{pedidoId}}", "cancelar"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "04. Pagamento Desacoplado & Webhook",
+			"item": [
+				{
+					"name": "Solicitar Pagamento via PIX",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"pedidoId\": \"{{pedidoId}}\",\n  \"formaPagamento\": \"PIX\",\n  \"chaveIdempotencia\": \"idempotency-key-req-2026-xyz\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/pagamentos/solicitar",
+							"host": ["{{baseUrl}}"],
+							"path": ["pagamentos", "solicitar"]
+						}
+					}
+				},
+				{
+					"name": "Webhook de Confirmação (Idempotente)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"chaveIdempotencia\": \"idempotency-key-req-2026-xyz\",\n  \"transacaoExternaId\": \"GW-EXTERNAL-TX-998877\",\n  \"statusGateway\": \"SUCCESS\",\n  \"valor\": 65.80\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/webhooks/pagamentos",
+							"host": ["{{baseUrl}}"],
+							"path": ["webhooks", "pagamentos"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "05. Conformidade LGPD",
+			"item": [
+				{
+					"name": "Exportar Meus Dados (Art. 18 LGPD)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/lgpd/meus-dados",
+							"host": ["{{baseUrl}}"],
+							"path": ["lgpd", "meus-dados"]
+						}
+					}
+				},
+				{
+					"name": "Anonimizar Minha Conta (Direito ao Esquecimento)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/lgpd/anonimizar",
+							"host": ["{{baseUrl}}"],
+							"path": ["lgpd", "anonimizar"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000/api/v1"
+		},
+		{
+			"key": "jwtToken",
+			"value": ""
+		},
+		{
+			"key": "pedidoId",
+			"value": ""
+		}
+	]
+}
